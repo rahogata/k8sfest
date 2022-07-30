@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-redis-0
+  namespace: data
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: ""
+  volumeName: pvc-redis-data-1
+  resources:
+    requests:
+      storage: 10Mi
+---      
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-redis-1
+  namespace: data
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: ""
+  volumeName: pvc-redis-data-2
+  resources:
+    requests:
+      storage: 10Mi
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-redis-2
+  namespace: data
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: ""
+  volumeName: pvc-redis-data-3
+  resources:
+    requests:
+      storage: 10Mi
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-redis-3
+  namespace: data
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: ""
+  volumeName: pvc-redis-data-4
+  resources:
+    requests:
+      storage: 10Mi
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-redis-4
+  namespace: data
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: ""
+  volumeName: pvc-redis-data-5
+  resources:
+    requests:
+      storage: 10Mi
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-redis-5
+  namespace: data
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: ""
+  volumeName: pvc-redis-data-6
+  resources:
+    requests:
+      storage: 10Mi
+---

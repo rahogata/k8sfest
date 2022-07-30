@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis
+  namespace: data
+data:
+  update-node.sh: |
+    #!/bin/sh
+    CLUSTER_CONFIG="/data/nodes.conf"
+    echo "creating nodes"
+    if [ -f ${CLUSTER_CONFIG} ]; then
+      echo "[ INFO ]File:${CLUSTER_CONFIG} is Found"
+    else
+      touch $CLUSTER_CONFIG
+    fi
+    if [ -z "${POD_IP}" ]; then
+      echo "Unable to determine Pod IP address!"
+      exit 1
+    fi
+    cat ${CLUSTER_CONFIG}
+    echo "Updating my IP to ${POD_IP} in ${CLUSTER_CONFIG}"
+    sed -i 's,myself,'"${POD_IP}"',g' ${CLUSTER_CONFIG}
+    sed -i -r 's/(\b[0-9]{1,3}\.){3}[0-9]{1,3}\b'/"${POD_IP}"/ ${CLUSTER_CONFIG}
+    echo "done"
+    cat ${CLUSTER_CONFIG}
+    exec "$@"
+  redis.conf: |+
+    cluster-enabled yes
+    cluster-require-full-coverage no
+    cluster-node-timeout 15000
+    cluster-config-file /data/nodes.conf
+    cluster-migration-barrier 1
+    appendonly yes
+    protected-mode no
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: data
+spec:
+  serviceName: redis
+  replicas: 6
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        namespace: data
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:5.0.1-alpine
+        ports:
+        - containerPort: 6379
+          name: client
+        - containerPort: 16379
+          name: gossip
+        resources:
+          requests:
+            memory: "16Mi"
+            cpu: "0.05"
+          limits:
+            memory: "32Mi"
+            cpu: "0.1"          
+        command: ["/conf/update-node.sh", "redis-server", "/conf/redis.conf"]
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        volumeMounts:
+        - name: conf
+          mountPath: /conf
+          readOnly: false
+        - name: data
+          mountPath: /data
+          readOnly: false
+      volumes:
+      - name: conf
+        configMap:
+          name: redis
+          defaultMode: 0755
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      namespace: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Mi

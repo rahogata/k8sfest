@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  updateStrategy:
+    type: RollingUpdate
+  serviceName: postgres-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      imagePullSecrets:
+      - name: regcred
+      initContainers:
+      - name: postgresql-conf-artifacts
+        image: busybox:1.31
+        command:
+        - /bin/sh
+        - "-c"
+        - |
+          set -e
+          cp -f /postgresql-conf/* /var/lib/postgresql/data/
+        volumeMounts:
+        - name: postgresql-conf
+          mountPath: /postgresql-conf
+        - name: postgredb
+          mountPath: /var/lib/postgresql/data
+      containers:
+      - name: postgres
+        image: postgres:12.11
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: postgres
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: postgres
+        volumeMounts:
+        - name: postgredb
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgresql-conf
+        configMap:
+          name: postgresql-conf
+      - name: postgredb
+        persistentVolumeClaim:
+          claimName: postgres-pv-claim
