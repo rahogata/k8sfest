@@ -40,15 +40,28 @@ spec:
         ports:
           - containerPort: 5432
         env:
-        - name: POSTGRES_DB
+        - 
+          name: POSTGRES_DB
           value: postgres
-        - name: POSTGRES_USER
+        - 
+          name: POSTGRES_USER
           value: postgres
-        - name: POSTGRES_PASSWORD
+        - 
+          name: POSTGRES_PASSWORD
           value: postgres
+        -
+          name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         volumeMounts:
         - name: postgredb
           mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: 128Mi
+            cpu: 0.2
+          limits:
+            memory: 256Mi
+            cpu: 0.2
       volumes:
       - name: postgresql-conf
         configMap:
